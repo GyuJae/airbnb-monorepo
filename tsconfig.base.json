@@ -14,7 +14,11 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@airbnb-mono/backend/data-access-db": [
+        "libs/backend/data-access-db/src/index.ts"
+      ]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

@@ -1,0 +1,164 @@
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider       = "prisma-client-js"
+  previewFeature = ["mongodb"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  email          String         @unique
+  password       String
+  firstName      String
+  lastName       String
+  avatar         String?
+  role           Role
+  gender         Gender
+  language       Language
+  rooms          Room[]
+  reviews        Review[]
+  chattingRoomId String[]       @db.ObjectId
+  chattingRooms  ChattingRoom[] @relation(fields: [chattingRoomId], references: [id])
+  messages       Message[]
+  wishlists      Wishlist[]
+  bookings       Booking[]
+}
+
+enum Role {
+  GUEST
+  HOST
+}
+
+enum Language {
+  KR
+  EN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+model Room {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  name          String
+  hostId        String         @db.ObjectId
+  host          User           @relation(fields: [hostId], references: [id])
+  country       String
+  city          String
+  price         Int
+  rooms         Int
+  toilets       Int
+  description   String
+  address       String
+  petFriendly   Boolean
+  kind          RoomKind
+  amenityIDs    String[]       @db.ObjectId
+  amenities     Amenity[]      @relation(fields: [amenityIDs], references: [id])
+  categoryId    String         @db.ObjectId
+  category      Category       @relation(fields: [categoryId], references: [id])
+  wishlistIDS   String[]       @db.ObjectId
+  wishlists     Wishlist[]     @relation(fields: [wishlistIDS], references: [id])
+  reviews       Review[]
+  photos        Photo[]
+  chattingRooms ChattingRoom[]
+  bookings      Booking[]
+}
+
+enum RoomKind {
+  ENTIRE_PLACE
+  PRIVATE_ROOM
+  SHARED_ROOM
+}
+
+model Amenity {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  name        String
+  description String
+  roomIDS     String[] @db.ObjectId
+  rooms       Room[]   @relation(fields: [roomIDS], references: [id])
+}
+
+model Category {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  rooms     Room[]
+}
+
+model Review {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  roomId    String   @db.ObjectId
+  room      Room     @relation(fields: [roomId], references: [id])
+}
+
+model Wishlist {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  roomIDS   String[] @db.ObjectId
+  rooms     Room[]   @relation(fields: [roomIDS], references: [id])
+}
+
+model Photo {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  roomId    String   @db.ObjectId
+  room      Room     @relation(fields: [roomId], references: [id])
+  path      String
+}
+
+model Booking {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  roomId    String   @db.ObjectId
+  room      Room     @relation(fields: [roomId], references: [id])
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  checkIn   DateTime
+  checkOut  DateTime
+  guests    Int
+}
+
+model ChattingRoom {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  userIDs   String[]  @db.ObjectId
+  users     User[]    @relation(fields: [userIDs], references: [id])
+  roomId    String    @db.ObjectId
+  room      Room      @relation(fields: [roomId], references: [id])
+  messages  Message[]
+}
+
+model Message {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  text           String
+  userId         String       @db.ObjectId
+  user           User         @relation(fields: [userId], references: [id])
+  chattingRoonId String       @db.ObjectId
+  chattingRoon   ChattingRoom @relation(fields: [chattingRoonId], references: [id])
+}
