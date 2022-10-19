@@ -35,6 +35,11 @@ import { MessagesService } from './messages.service';
 export class MessagesResolver {
   constructor(private readonly messagesService: MessagesService) {}
 
+  @ResolveField(() => UserEntity)
+  async user(@Parent() message: MessageEntity): Promise<UserEntity> {
+    return this.messagesService.user(message);
+  }
+
   @Query(() => ReadMessagesOutput)
   async readMessages(
     @Args('input') readMessagesInput: ReadMessagesInput,

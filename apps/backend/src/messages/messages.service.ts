@@ -18,6 +18,7 @@ import {
   ReadMessagesOutput,
 } from './dtos/read-messages.dto';
 import { ChattingRoomEntity } from './entities/chattingRoom.entity';
+import { MessageEntity } from './entities/message.entity';
 
 @Injectable()
 export class MessagesService {
@@ -195,5 +196,17 @@ export class MessagesService {
         messages: [],
       };
     }
+  }
+
+  async user(message: MessageEntity): Promise<UserEntity> {
+    return this.prisma.user.findFirst({
+      where: {
+        messages: {
+          some: {
+            id: message.id,
+          },
+        },
+      },
+    });
   }
 }
