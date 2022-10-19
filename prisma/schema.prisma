@@ -66,8 +66,8 @@ model Room {
   amenities     Amenity[]      @relation(fields: [amenityIDs], references: [id])
   categoryId    String         @db.ObjectId
   category      Category       @relation(fields: [categoryId], references: [id])
-  wishlistIDS   String[]       @db.ObjectId
-  wishlists     Wishlist[]     @relation(fields: [wishlistIDS], references: [id])
+  wishlistIDs   String[]       @db.ObjectId
+  wishlists     Wishlist[]     @relation(fields: [wishlistIDs], references: [id])
   reviews       Review[]
   photos        Photo[]
   chattingRooms ChattingRoom[]
@@ -94,7 +94,7 @@ model Category {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  name      String
+  name      String   @unique
   rooms     Room[]
 }
 

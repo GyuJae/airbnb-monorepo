@@ -10,8 +10,10 @@ import { MercuriusDriverConfig, MercuriusDriver } from '@nestjs/mercurius';
 import path = require('path');
 import { AuthMiddleware } from '../auth/auth.middleware';
 import { AuthModule } from '../auth/auth.module';
+import { CategoriesModule } from '../categories/categories.module';
 import { CoreModule } from '../core/core.module';
 import { PrismaModule } from '../prisma/prisma.module';
+import { RoomsModule } from '../rooms/rooms.module';
 import { UsersModule } from '../users/users.module';
 
 @Module({
@@ -34,6 +36,8 @@ import { UsersModule } from '../users/users.module';
     UsersModule,
     PrismaModule,
     AuthModule,
+    RoomsModule,
+    CategoriesModule,
   ],
   controllers: [],
   providers: [],

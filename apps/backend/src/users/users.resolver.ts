@@ -7,6 +7,7 @@ import {
   Subscription,
 } from '@nestjs/graphql';
 import { PubSub } from 'mercurius';
+import { CurrentUser } from '../auth/auth.decorator';
 import { CreateUserInput, CreateUserOutput } from './dtos/create-user.dto';
 import { MeOutput } from './dtos/me.dto';
 import { UserEntity } from './entities/user.entity';
@@ -17,9 +18,9 @@ export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
   @Query(() => MeOutput)
-  me(@Context() context): MeOutput {
+  me(@CurrentUser() currentUser: UserEntity): MeOutput {
     return {
-      user: context['user'],
+      user: currentUser || null,
     };
   }
 
