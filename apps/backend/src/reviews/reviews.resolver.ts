@@ -2,6 +2,7 @@ import {
   Args,
   Context,
   Mutation,
+  Query,
   Resolver,
   Subscription,
 } from '@nestjs/graphql';
@@ -16,12 +17,20 @@ import {
   DeleteReviewInput,
   DeleteReviewOutput,
 } from './dtos/delete-review.dto';
+import { ReadReviewsInput, ReadReviewsOutput } from './dtos/read-reviews.dto';
 import { ReviewEntity } from './entities/review.entity';
 import { ReviewsService } from './reviews.service';
 
 @Resolver(() => ReviewEntity)
 export class ReviewsResolver {
   constructor(private readonly reviewsService: ReviewsService) {}
+
+  @Query(() => ReadReviewsOutput)
+  async readReviews(
+    @Args('input') readReviewsInput: ReadReviewsInput,
+  ): Promise<ReadReviewsOutput> {
+    return this.reviewsService.readReviews(readReviewsInput);
+  }
 
   @Mutation(() => CreateReviewOutput)
   async createReview(

@@ -9,6 +9,7 @@ import {
   DeleteReviewInput,
   DeleteReviewOutput,
 } from './dtos/delete-review.dto';
+import { ReadReviewsInput, ReadReviewsOutput } from './dtos/read-reviews.dto';
 
 @Injectable()
 export class ReviewsService {
@@ -79,6 +80,46 @@ export class ReviewsService {
       return {
         ok: false,
         error: error.message,
+      };
+    }
+  }
+
+  async readReviews({
+    roomId,
+    take = 20,
+    lastId,
+  }: ReadReviewsInput): Promise<ReadReviewsOutput> {
+    try {
+      const room = await this.prisma.room.findUnique({
+        where: {
+          id: roomId,
+        },
+        select: {
+          id: true,
+        },
+      });
+      if (!room) throw new Error(`Not found roomd by this roomId: ${roomId}`);
+      const reviews = await this.prisma.review.findMany({
+        where: {
+          roomId: room.id,
+        },
+        take,
+        skip: lastId ? 1 : 0,
+        ...(lastId && {
+          cursor: {
+            id: lastId,
+          },
+        }),
+      });
+      return {
+        ok: true,
+        reviews,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error.message,
+        reviews: [],
       };
     }
   }
