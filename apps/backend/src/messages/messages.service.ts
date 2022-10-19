@@ -9,6 +9,10 @@ import {
   CreateMessageInput,
   CreateMessageOutput,
 } from './dtos/create-message.dto';
+import {
+  DeleteMessageInput,
+  DeleteMessageOutput,
+} from './dtos/delete-message.dto';
 import { ChattingRoomEntity } from './entities/chattingRoom.entity';
 
 @Injectable()
@@ -114,6 +118,37 @@ export class MessagesService {
               id: chattingRoom.id,
             },
           },
+        },
+      });
+      return {
+        ok: true,
+        message,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error.message,
+      };
+    }
+  }
+
+  async deleteMessage(
+    { messageId }: DeleteMessageInput,
+    currentUser: UserEntity,
+  ): Promise<DeleteMessageOutput> {
+    try {
+      const message = await this.prisma.message.findFirst({
+        where: {
+          id: messageId,
+          userId: currentUser.id,
+        },
+      });
+      if (!message)
+        throw new Error(`Not Found Message by this message id ${messageId}`);
+
+      await this.prisma.message.delete({
+        where: {
+          id: message.id,
         },
       });
       return {

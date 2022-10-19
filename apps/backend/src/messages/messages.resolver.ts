@@ -18,6 +18,10 @@ import {
   CreateMessageInput,
   CreateMessageOutput,
 } from './dtos/create-message.dto';
+import {
+  DeleteMessageInput,
+  DeleteMessageOutput,
+} from './dtos/delete-message.dto';
 import { ChattingRoomEntity } from './entities/chattingRoom.entity';
 import { MessageEntity } from './entities/message.entity';
 import { MessagesService } from './messages.service';
@@ -58,6 +62,40 @@ export class MessagesResolver {
     @Context('pubsub') pubSub: PubSub,
   ) {
     return pubSub.subscribe('createMessage');
+  }
+
+  @Mutation(() => DeleteMessageOutput)
+  async deleteMessage(
+    @Args('input') deleteMessageInput: DeleteMessageInput,
+    @CurrentUser() currentUser: UserEntity,
+    @Context('pubsub') pubSub: PubSub,
+  ): Promise<DeleteMessageOutput> {
+    const result = await this.messagesService.deleteMessage(
+      deleteMessageInput,
+      currentUser,
+    );
+    if (result.ok && result.message) {
+      pubSub.publish({
+        topic: 'deleteMessage',
+        payload: {
+          deleteMessage: result.message,
+        },
+      });
+    }
+    return result;
+  }
+
+  @Subscription(() => MessageEntity, {
+    name: 'deleteMessage',
+    filter: (payload, valiables) => {
+      return payload.deleteMessage.chattingRoomId === valiables.chattingRoomId;
+    },
+  })
+  onDeleteMessage(
+    @Args('chattingRoomId') _chattingRoomId: string,
+    @Context('pubsub') pubSub: PubSub,
+  ) {
+    return pubSub.subscribe('deleteMessage');
   }
 }
 
