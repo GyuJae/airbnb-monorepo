@@ -34,7 +34,9 @@ export class RoomsResolver {
     return result;
   }
 
-  @Subscription(() => RoomEntity)
+  @Subscription(() => RoomEntity, {
+    name: 'createRoom',
+  })
   async onCreateRoom(@Context('pubsub') pubSub: PubSub) {
     return pubSub.subscribe('createRoom');
   }
