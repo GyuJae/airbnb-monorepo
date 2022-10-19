@@ -6,6 +6,10 @@ import {
   CreateWishlistOutput,
 } from './dtos/create-wishlist.dto';
 import {
+  DeleteWishlistInput,
+  DeleteWishlistOutput,
+} from './dtos/delete-wishlist.dto';
+import {
   ReadWishlistOutput,
   ReadWishlistsInput,
 } from './dtos/read-wishlists.dto';
@@ -72,6 +76,36 @@ export class WishlistsService {
         ok: false,
         error: error.message,
         wishlists: [],
+      };
+    }
+  }
+
+  async deleteWishlist(
+    { wishlistId }: DeleteWishlistInput,
+    user: UserEntity,
+  ): Promise<DeleteWishlistOutput> {
+    try {
+      const wishlist = await this.prisma.wishlist.findUnique({
+        where: {
+          id: wishlistId,
+        },
+      });
+      if (!wishlist)
+        throw new Error(`Not Found wishlist by this wishlistId: ${wishlistId}`);
+      if (wishlist.userId !== user.id) throw new Error('No Authorzation');
+      await this.prisma.wishlist.delete({
+        where: {
+          id: wishlist.id,
+        },
+      });
+      return {
+        ok: true,
+        wishlist,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error.message,
       };
     }
   }

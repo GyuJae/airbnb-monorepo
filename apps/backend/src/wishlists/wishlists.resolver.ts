@@ -14,6 +14,10 @@ import {
   CreateWishlistOutput,
 } from './dtos/create-wishlist.dto';
 import {
+  DeleteWishlistInput,
+  DeleteWishlistOutput,
+} from './dtos/delete-wishlist.dto';
+import {
   ReadWishlistOutput,
   ReadWishlistsInput,
 } from './dtos/read-wishlists.dto';
@@ -57,5 +61,33 @@ export class WishlistsResolver {
   })
   onCreateWishlist(@Context('pubsub') pubSub: PubSub) {
     return pubSub.subscribe('createWishlist');
+  }
+
+  @Mutation(() => DeleteWishlistOutput)
+  async deleteWishlist(
+    @Args('input') deleteWishlistInput: DeleteWishlistInput,
+    @CurrentUser() user: UserEntity,
+    @Context('pubsub') pubSub: PubSub,
+  ): Promise<DeleteWishlistOutput> {
+    const result = await this.wishlistsService.deleteWishlist(
+      deleteWishlistInput,
+      user,
+    );
+    if (result.ok && result.wishlist) {
+      pubSub.publish({
+        topic: 'deleteWishlist',
+        payload: {
+          deleteWishlist: result.wishlist,
+        },
+      });
+    }
+    return result;
+  }
+
+  @Subscription(() => WishlistEntity, {
+    name: 'deleteWishlist',
+  })
+  async onDelteWishlist(@Context('pubsub') pubSub: PubSub) {
+    return pubSub.subscribe('deleteWishlist');
   }
 }
