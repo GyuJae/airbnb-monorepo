@@ -2,7 +2,9 @@ import {
   Args,
   Context,
   Mutation,
+  Parent,
   Query,
+  ResolveField,
   Resolver,
   Subscription,
 } from '@nestjs/graphql';
@@ -24,6 +26,11 @@ import { ReviewsService } from './reviews.service';
 @Resolver(() => ReviewEntity)
 export class ReviewsResolver {
   constructor(private readonly reviewsService: ReviewsService) {}
+
+  @ResolveField(() => UserEntity)
+  async user(@Parent() review: ReviewEntity): Promise<UserEntity> {
+    return this.reviewsService.user(review);
+  }
 
   @Query(() => ReadReviewsOutput)
   async readReviews(

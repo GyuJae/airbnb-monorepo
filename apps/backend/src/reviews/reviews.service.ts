@@ -10,6 +10,7 @@ import {
   DeleteReviewOutput,
 } from './dtos/delete-review.dto';
 import { ReadReviewsInput, ReadReviewsOutput } from './dtos/read-reviews.dto';
+import { ReviewEntity } from './entities/review.entity';
 
 @Injectable()
 export class ReviewsService {
@@ -121,6 +122,23 @@ export class ReviewsService {
         error: error.message,
         reviews: [],
       };
+    }
+  }
+
+  async user({ id }: ReviewEntity): Promise<UserEntity | null> {
+    try {
+      const review = await this.prisma.review.findUnique({
+        where: {
+          id,
+        },
+        select: {
+          user: true,
+        },
+      });
+
+      return review.user;
+    } catch {
+      return null;
     }
   }
 }
