@@ -40,6 +40,6 @@ export class AmenitiesResolver {
     name: 'createAmenity',
   })
   async onCreateAmenity(@Context('pubsub') pubSub: PubSub) {
-    return pubSub.subscribe('createAmenity');
+    return pubSub.subscribe('createAmenitys');
   }
 }
