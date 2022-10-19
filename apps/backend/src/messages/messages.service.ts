@@ -13,6 +13,10 @@ import {
   DeleteMessageInput,
   DeleteMessageOutput,
 } from './dtos/delete-message.dto';
+import {
+  ReadMessagesInput,
+  ReadMessagesOutput,
+} from './dtos/read-messages.dto';
 import { ChattingRoomEntity } from './entities/chattingRoom.entity';
 
 @Injectable()
@@ -159,6 +163,36 @@ export class MessagesService {
       return {
         ok: false,
         error: error.message,
+      };
+    }
+  }
+
+  async readMessages({
+    chattingRoomId,
+    take,
+    lastId,
+  }: ReadMessagesInput): Promise<ReadMessagesOutput> {
+    try {
+      const messages = await this.prisma.message.findMany({
+        where: {
+          chattingRoomId,
+        },
+        take,
+        ...(lastId && {
+          cursor: {
+            id: lastId,
+          },
+        }),
+      });
+      return {
+        ok: true,
+        messages,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error.messages,
+        messages: [],
       };
     }
   }

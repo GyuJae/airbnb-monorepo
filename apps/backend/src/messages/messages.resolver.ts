@@ -3,6 +3,7 @@ import {
   Context,
   Mutation,
   Parent,
+  Query,
   ResolveField,
   Resolver,
   Subscription,
@@ -22,6 +23,10 @@ import {
   DeleteMessageInput,
   DeleteMessageOutput,
 } from './dtos/delete-message.dto';
+import {
+  ReadMessagesInput,
+  ReadMessagesOutput,
+} from './dtos/read-messages.dto';
 import { ChattingRoomEntity } from './entities/chattingRoom.entity';
 import { MessageEntity } from './entities/message.entity';
 import { MessagesService } from './messages.service';
@@ -29,6 +34,13 @@ import { MessagesService } from './messages.service';
 @Resolver(() => MessageEntity)
 export class MessagesResolver {
   constructor(private readonly messagesService: MessagesService) {}
+
+  @Query(() => ReadMessagesOutput)
+  async readMessages(
+    @Args('input') readMessagesInput: ReadMessagesInput,
+  ): Promise<ReadMessagesOutput> {
+    return this.messagesService.readMessages(readMessagesInput);
+  }
 
   @Mutation(() => CreateMessageOutput)
   async createMessage(
