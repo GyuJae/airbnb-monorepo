@@ -2,6 +2,7 @@ import {
   Args,
   Context,
   Mutation,
+  Query,
   Resolver,
   Subscription,
 } from '@nestjs/graphql';
@@ -12,12 +13,23 @@ import {
   CreateWishlistInput,
   CreateWishlistOutput,
 } from './dtos/create-wishlist.dto';
+import {
+  ReadWishlistOutput,
+  ReadWishlistsInput,
+} from './dtos/read-wishlists.dto';
 import { WishlistEntity } from './entities/wishlist.entity';
 import { WishlistsService } from './wishlists.service';
 
 @Resolver(() => WishlistEntity)
 export class WishlistsResolver {
   constructor(private readonly wishlistsService: WishlistsService) {}
+
+  @Query(() => ReadWishlistOutput)
+  async readWishlists(
+    @Args('input') readWishlistsInput: ReadWishlistsInput,
+  ): Promise<ReadWishlistOutput> {
+    return this.wishlistsService.readWishlists(readWishlistsInput);
+  }
 
   @Mutation(() => CreateWishlistOutput)
   async createWishlist(
