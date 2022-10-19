@@ -13,6 +13,7 @@ import { AuthMiddleware } from '../auth/auth.middleware';
 import { AuthModule } from '../auth/auth.module';
 import { CategoriesModule } from '../categories/categories.module';
 import { CoreModule } from '../core/core.module';
+import { MessagesModule } from '../messages/messages.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ReviewsModule } from '../reviews/reviews.module';
 import { RoomsModule } from '../rooms/rooms.module';
@@ -44,6 +45,7 @@ import { WishlistsModule } from '../wishlists/wishlists.module';
     AmenitiesModule,
     ReviewsModule,
     WishlistsModule,
+    MessagesModule,
   ],
   controllers: [],
   providers: [],
