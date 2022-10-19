@@ -12,6 +12,10 @@ import {
   CreateReviewInput,
   CreateReviewOutput,
 } from './dtos/create-review.dto';
+import {
+  DeleteReviewInput,
+  DeleteReviewOutput,
+} from './dtos/delete-review.dto';
 import { ReviewEntity } from './entities/review.entity';
 import { ReviewsService } from './reviews.service';
 
@@ -45,5 +49,33 @@ export class ReviewsResolver {
   })
   async onCreateReview(@Context('pubsub') pubSub: PubSub) {
     return pubSub.subscribe('createReview');
+  }
+
+  @Mutation(() => DeleteReviewOutput)
+  async deleteReview(
+    @Args('input') deleteReviewInput: DeleteReviewInput,
+    @CurrentUser() user: UserEntity,
+    @Context('pubsub') pubSub: PubSub,
+  ): Promise<DeleteReviewOutput> {
+    const result = await this.reviewsService.deleteReview(
+      deleteReviewInput,
+      user,
+    );
+    if (result.ok && result.review) {
+      pubSub.publish({
+        topic: 'deleteReview',
+        payload: {
+          deleteReview: result.review,
+        },
+      });
+    }
+    return result;
+  }
+
+  @Subscription(() => ReviewEntity, {
+    name: 'deleteReview',
+  })
+  async onDeleteReview(@Context('pubsub') pubSub: PubSub) {
+    return pubSub.subscribe('deleteReview');
   }
 }

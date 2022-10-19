@@ -5,6 +5,10 @@ import {
   CreateReviewInput,
   CreateReviewOutput,
 } from './dtos/create-review.dto';
+import {
+  DeleteReviewInput,
+  DeleteReviewOutput,
+} from './dtos/delete-review.dto';
 
 @Injectable()
 export class ReviewsService {
@@ -31,6 +35,42 @@ export class ReviewsService {
           userId: user.id,
         },
       });
+      return {
+        ok: true,
+        review,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error.message,
+      };
+    }
+  }
+
+  async deleteReview(
+    { id: reviewId }: DeleteReviewInput,
+    user: UserEntity,
+  ): Promise<DeleteReviewOutput> {
+    try {
+      const existReview = await this.prisma.review.findUnique({
+        where: {
+          id: reviewId,
+        },
+        select: {
+          id: true,
+          userId: true,
+        },
+      });
+      if (!existReview)
+        throw new Error(`Not Found Review by this reviewId ${reviewId}`);
+      if (existReview.userId !== user.id) throw new Error('No Authorization.');
+
+      const review = await this.prisma.review.delete({
+        where: {
+          id: existReview.id,
+        },
+      });
+
       return {
         ok: true,
         review,
