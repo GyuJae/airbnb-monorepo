@@ -84,7 +84,7 @@ model Amenity {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  name        String
+  name        String   @unique
   description String
   roomIDS     String[] @db.ObjectId
   rooms       Room[]   @relation(fields: [roomIDS], references: [id])

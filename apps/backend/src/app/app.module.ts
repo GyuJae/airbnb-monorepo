@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { MercuriusDriverConfig, MercuriusDriver } from '@nestjs/mercurius';
 import path = require('path');
+import { AmenitiesModule } from '../amenities/amenities.module';
 import { AuthMiddleware } from '../auth/auth.middleware';
 import { AuthModule } from '../auth/auth.module';
 import { CategoriesModule } from '../categories/categories.module';
@@ -38,6 +39,7 @@ import { UsersModule } from '../users/users.module';
     AuthModule,
     RoomsModule,
     CategoriesModule,
+    AmenitiesModule,
   ],
   controllers: [],
   providers: [],
