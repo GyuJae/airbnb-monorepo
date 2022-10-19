@@ -15,5 +15,5 @@ export class MessageEntity extends CoreEntity implements Message {
 
   @Field(() => String)
   @IsString()
-  chattingRoonId: string;
+  chattingRoomId: string;
 }

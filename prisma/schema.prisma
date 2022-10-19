@@ -160,6 +160,6 @@ model Message {
   text           String
   userId         String       @db.ObjectId
   user           User         @relation(fields: [userId], references: [id])
-  chattingRoonId String       @db.ObjectId
-  chattingRoon   ChattingRoom @relation(fields: [chattingRoonId], references: [id])
+  chattingRoomId String       @db.ObjectId
+  chattingRoom   ChattingRoom @relation(fields: [chattingRoomId], references: [id])
 }

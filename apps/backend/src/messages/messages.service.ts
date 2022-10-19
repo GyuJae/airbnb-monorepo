@@ -5,6 +5,11 @@ import {
   CreateChattingRoomInput,
   CreateChattingRoomOutput,
 } from './dtos/create-chatting-room.dto';
+import {
+  CreateMessageInput,
+  CreateMessageOutput,
+} from './dtos/create-message.dto';
+import { ChattingRoomEntity } from './entities/chattingRoom.entity';
 
 @Injectable()
 export class MessagesService {
@@ -29,7 +34,7 @@ export class MessagesService {
           roomId,
           users: {
             every: {
-              AND: [{ id: room.hostId }, { id: currentUser.id }],
+              OR: [{ id: room.hostId }, { id: currentUser.id }],
             },
           },
         },
@@ -52,6 +57,68 @@ export class MessagesService {
       return {
         ok: true,
         chattingRoom: newChattingRoom,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error.message,
+      };
+    }
+  }
+
+  async users({ id }: ChattingRoomEntity): Promise<UserEntity[]> {
+    const chattingRoom = await this.prisma.chattingRoom.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        users: true,
+      },
+    });
+    return chattingRoom.users;
+  }
+
+  async createMessage(
+    { text, chattingRoomId }: CreateMessageInput,
+    currentUser: UserEntity,
+  ): Promise<CreateMessageOutput> {
+    try {
+      const chattingRoom = await this.prisma.chattingRoom.findFirst({
+        where: {
+          id: chattingRoomId,
+          users: {
+            some: {
+              id: currentUser.id,
+            },
+          },
+        },
+        select: {
+          id: true,
+        },
+      });
+      if (!chattingRoom)
+        throw new Error(
+          `Not Found Chatting Room by this chattingRoomId ${chattingRoomId}`,
+        );
+
+      const message = await this.prisma.message.create({
+        data: {
+          text,
+          user: {
+            connect: {
+              id: currentUser.id,
+            },
+          },
+          chattingRoom: {
+            connect: {
+              id: chattingRoom.id,
+            },
+          },
+        },
+      });
+      return {
+        ok: true,
+        message,
       };
     } catch (error) {
       return {
