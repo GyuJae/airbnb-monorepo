@@ -17,6 +17,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { ReviewsModule } from '../reviews/reviews.module';
 import { RoomsModule } from '../rooms/rooms.module';
 import { UsersModule } from '../users/users.module';
+import { WishlistsModule } from '../wishlists/wishlists.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { UsersModule } from '../users/users.module';
     CategoriesModule,
     AmenitiesModule,
     ReviewsModule,
+    WishlistsModule,
   ],
   controllers: [],
   providers: [],

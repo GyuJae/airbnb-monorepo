@@ -5,6 +5,8 @@ import {
   Args,
   Context,
   Subscription,
+  ResolveField,
+  Parent,
 } from '@nestjs/graphql';
 import { PubSub } from 'mercurius';
 import { CurrentUser } from '../auth/auth.decorator';
@@ -16,6 +18,12 @@ import { UsersService } from './users.service';
 @Resolver(() => UserEntity)
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
+
+  @ResolveField(() => Boolean)
+  isMe(@Parent() user: UserEntity, @CurrentUser() currentUser: UserEntity) {
+    if (!currentUser) return false;
+    return user.id === currentUser.id;
+  }
 
   @Query(() => MeOutput)
   me(@CurrentUser() currentUser: UserEntity): MeOutput {
