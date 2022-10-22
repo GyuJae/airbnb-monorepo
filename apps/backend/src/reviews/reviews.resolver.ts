@@ -1,6 +1,6 @@
+import { Inject } from '@nestjs/common';
 import {
   Args,
-  Context,
   Mutation,
   Parent,
   Query,
@@ -8,8 +8,9 @@ import {
   Resolver,
   Subscription,
 } from '@nestjs/graphql';
-import { PubSub } from 'mercurius';
+import { PubSub } from 'graphql-subscriptions';
 import { CurrentUser } from '../auth/auth.decorator';
+import { PUB_SUB } from '../core/core.constants';
 import { UserEntity } from '../users/entities/user.entity';
 import {
   CreateReviewInput,
@@ -25,7 +26,10 @@ import { ReviewsService } from './reviews.service';
 
 @Resolver(() => ReviewEntity)
 export class ReviewsResolver {
-  constructor(private readonly reviewsService: ReviewsService) {}
+  constructor(
+    private readonly reviewsService: ReviewsService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
+  ) {}
 
   @ResolveField(() => UserEntity)
   async user(@Parent() review: ReviewEntity): Promise<UserEntity> {
@@ -43,18 +47,14 @@ export class ReviewsResolver {
   async createReview(
     @Args('input') createReviewInput: CreateReviewInput,
     @CurrentUser() user: UserEntity,
-    @Context('pubsub') pubSub: PubSub,
   ): Promise<CreateReviewOutput> {
     const result = await this.reviewsService.createReview(
       createReviewInput,
       user,
     );
     if (result.ok && result.review) {
-      pubSub.publish({
-        topic: 'createReview',
-        payload: {
-          createReview: result.review,
-        },
+      this.pubSub.publish('createReview', {
+        createReview: result.review,
       });
     }
     return result;
@@ -63,26 +63,22 @@ export class ReviewsResolver {
   @Subscription(() => ReviewEntity, {
     name: 'createReview',
   })
-  async onCreateReview(@Context('pubsub') pubSub: PubSub) {
-    return pubSub.subscribe('createReview');
+  async onCreateReview() {
+    return this.pubSub.asyncIterator('createReview');
   }
 
   @Mutation(() => DeleteReviewOutput)
   async deleteReview(
     @Args('input') deleteReviewInput: DeleteReviewInput,
     @CurrentUser() user: UserEntity,
-    @Context('pubsub') pubSub: PubSub,
   ): Promise<DeleteReviewOutput> {
     const result = await this.reviewsService.deleteReview(
       deleteReviewInput,
       user,
     );
     if (result.ok && result.review) {
-      pubSub.publish({
-        topic: 'deleteReview',
-        payload: {
-          deleteReview: result.review,
-        },
+      this.pubSub.publish('deleteReview', {
+        deleteReview: result.review,
       });
     }
     return result;
@@ -91,7 +87,7 @@ export class ReviewsResolver {
   @Subscription(() => ReviewEntity, {
     name: 'deleteReview',
   })
-  async onDeleteReview(@Context('pubsub') pubSub: PubSub) {
-    return pubSub.subscribe('deleteReview');
+  async onDeleteReview() {
+    return this.pubSub.asyncIterator('deleteReview');
   }
 }

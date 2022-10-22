@@ -1,12 +1,7 @@
-import {
-  Args,
-  Context,
-  Mutation,
-  Query,
-  Resolver,
-  Subscription,
-} from '@nestjs/graphql';
-import { PubSub } from 'mercurius';
+import { Inject } from '@nestjs/common';
+import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
+import { PubSub } from 'graphql-subscriptions';
+import { PUB_SUB } from '../core/core.constants';
 import { CategoriesService } from './categories.service';
 import {
   CreateCategoryInput,
@@ -17,7 +12,10 @@ import { CategoryEntity } from './entities/category.entity';
 
 @Resolver(() => CategoryEntity)
 export class CategoriesResolver {
-  constructor(private readonly categoriesService: CategoriesService) {}
+  constructor(
+    private readonly categoriesService: CategoriesService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
+  ) {}
 
   @Query(() => ReadCategoriesOutput)
   async readCategories(): Promise<ReadCategoriesOutput> {
@@ -27,17 +25,13 @@ export class CategoriesResolver {
   @Mutation(() => CreateCategoryOutput)
   async createCategory(
     @Args('input') createCategoryInput: CreateCategoryInput,
-    @Context('pubsub') pubSub: PubSub,
   ): Promise<CreateCategoryOutput> {
     const result = await this.categoriesService.createCategory(
       createCategoryInput,
     );
     if (result.ok && result.category) {
-      pubSub.publish({
-        topic: 'createCategory',
-        payload: {
-          createCategory: result.category,
-        },
+      this.pubSub.publish('createCategory', {
+        createCategory: result.category,
       });
     }
     return result;
@@ -46,7 +40,7 @@ export class CategoriesResolver {
   @Subscription(() => CategoryEntity, {
     name: 'createCategory',
   })
-  onCreateCategory(@Context('pubsub') pubSub: PubSub) {
-    return pubSub.subscribe('createCategory');
+  onCreateCategory() {
+    return this.pubSub.asyncIterator('createCategory');
   }
 }

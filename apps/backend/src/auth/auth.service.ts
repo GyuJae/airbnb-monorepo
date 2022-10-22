@@ -19,10 +19,6 @@ export class AuthService {
         where: {
           email,
         },
-        select: {
-          id: true,
-          password: true,
-        },
       });
 
       if (!user) throw new Error('Not Found User by this email');
@@ -35,6 +31,7 @@ export class AuthService {
       return {
         ok: true,
         token,
+        user,
       };
     } catch (error) {
       return {

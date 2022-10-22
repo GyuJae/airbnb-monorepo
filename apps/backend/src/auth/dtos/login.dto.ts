@@ -13,4 +13,7 @@ export class LoginInput extends PickType(
 export class LoginOutput extends CoreOutput {
   @Field(() => String, { nullable: true })
   token?: string | null;
+
+  @Field(() => UserEntity, { nullable: true })
+  user?: UserEntity | null;
 }

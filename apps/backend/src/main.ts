@@ -5,14 +5,18 @@
 
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { FastifyAdapter } from '@nestjs/platform-fastify';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 import { AppModule } from './app/app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, new FastifyAdapter());
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    cors: true,
+  });
   const globalPrefix = 'api';
+
   app.setGlobalPrefix(globalPrefix);
+
   app.useGlobalPipes(
     new ValidationPipe({
       skipMissingProperties: true,
@@ -26,7 +30,7 @@ async function bootstrap() {
   Logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
   );
-  Logger.log(`🚀 Application is running on: http://localhost:${port}/graphiql`);
+  Logger.log(`🚀 Application is running on: http://localhost:${port}/graphql`);
 }
 
 bootstrap();

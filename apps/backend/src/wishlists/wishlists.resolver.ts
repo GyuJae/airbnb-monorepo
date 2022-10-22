@@ -1,13 +1,8 @@
-import {
-  Args,
-  Context,
-  Mutation,
-  Query,
-  Resolver,
-  Subscription,
-} from '@nestjs/graphql';
-import { PubSub } from 'mercurius';
+import { Inject } from '@nestjs/common';
+import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
+import { PubSub } from 'graphql-subscriptions';
 import { CurrentUser } from '../auth/auth.decorator';
+import { PUB_SUB } from '../core/core.constants';
 import { UserEntity } from '../users/entities/user.entity';
 import {
   CreateWishlistInput,
@@ -26,7 +21,10 @@ import { WishlistsService } from './wishlists.service';
 
 @Resolver(() => WishlistEntity)
 export class WishlistsResolver {
-  constructor(private readonly wishlistsService: WishlistsService) {}
+  constructor(
+    private readonly wishlistsService: WishlistsService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
+  ) {}
 
   @Query(() => ReadWishlistOutput)
   async readWishlists(
@@ -39,18 +37,14 @@ export class WishlistsResolver {
   async createWishlist(
     @Args('input') createWishlistInput: CreateWishlistInput,
     @CurrentUser() user: UserEntity,
-    @Context('pubsub') pubSub: PubSub,
   ): Promise<CreateWishlistOutput> {
     const result = await this.wishlistsService.createWishlist(
       createWishlistInput,
       user,
     );
     if (result.ok && result.wishlist) {
-      pubSub.publish({
-        topic: 'createWishlist',
-        payload: {
-          createWishlist: result.wishlist,
-        },
+      this.pubSub.publish('createWishlist', {
+        createWishlist: result.wishlist,
       });
     }
     return result;
@@ -59,26 +53,22 @@ export class WishlistsResolver {
   @Subscription(() => WishlistEntity, {
     name: 'createWishlist',
   })
-  onCreateWishlist(@Context('pubsub') pubSub: PubSub) {
-    return pubSub.subscribe('createWishlist');
+  onCreateWishlist() {
+    return this.pubSub.asyncIterator('createWishlist');
   }
 
   @Mutation(() => DeleteWishlistOutput)
   async deleteWishlist(
     @Args('input') deleteWishlistInput: DeleteWishlistInput,
     @CurrentUser() user: UserEntity,
-    @Context('pubsub') pubSub: PubSub,
   ): Promise<DeleteWishlistOutput> {
     const result = await this.wishlistsService.deleteWishlist(
       deleteWishlistInput,
       user,
     );
     if (result.ok && result.wishlist) {
-      pubSub.publish({
-        topic: 'deleteWishlist',
-        payload: {
-          deleteWishlist: result.wishlist,
-        },
+      this.pubSub.publish('deleteWishlist', {
+        deleteWishlist: result.wishlist,
       });
     }
     return result;
@@ -87,7 +77,7 @@ export class WishlistsResolver {
   @Subscription(() => WishlistEntity, {
     name: 'deleteWishlist',
   })
-  async onDelteWishlist(@Context('pubsub') pubSub: PubSub) {
-    return pubSub.subscribe('deleteWishlist');
+  async onDelteWishlist() {
+    return this.pubSub.asyncIterator('deleteWishlist');
   }
 }
